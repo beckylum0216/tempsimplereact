@@ -25,7 +25,7 @@ class Board extends React.Component{
         var col = [];
         for(let ii = 0; ii < 3; ii += 1)
         {
-            let count = row + ii;
+            let count = (row * 3) + ii;
             col.push(<Square value={this.state.squares[count]} onClick={() =>this.eventHandler(count)} />)
         }
 
