@@ -11,22 +11,14 @@ class Board extends React.Component{
     }
 
 
-    eventHandler(counter)
-    {
-        let board = this.state.squares.slice();
-        board[counter] = "X";
-        console.log("board:", board);
-        this.setState({squares:board});
-
-    }
-
     createCol(row)
     {
         var col = [];
+
         for(let ii = 0; ii < 3; ii += 1)
         {
             let count = (row * 3) + ii;
-            col.push(<Square value={this.state.squares[count]} onClick={() =>this.eventHandler(count)} />)
+            col.push(<Square value={this.props.squares[count]} onClick={() => this.props.onRefresh(count)} />)
         }
 
         return <div>{col}</div>;

@@ -2,13 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-import Board from './component/board';
+import Game from './component/game';
 
 class App extends React.Component
 {
     render()
     {
-        return <div><Board /></div>;
+        return <div><Game /></div>;
     }
 }
 
