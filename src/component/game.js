@@ -6,21 +6,25 @@ class Game extends React.Component
     constructor(props)
     {
         super(props)
+        this.winArr = [];
         this.positionArr = [0,1,2,3,4,5,6,7,8];
         this.moveIndex = 0;
         this.boardDims = 3;
+        this.breakFlag = false;
         this.state = {
             gboard: Array(9).fill(null),
-            next: "X",
+            winElement: [],
         }
     }
 
+
+    // contains game logic
     onRefresh = (position) =>
     {
 
         let gameBoard = this.state.gboard;
 
-        if(this.winCondition() === false && this.moveIndex > (this.boardDims * this.boardDims))
+        if(this.winCondition() === false && this.moveIndex > (this.boardDims * this.boardDims)-1)
         {
 
             alert("The game is a draw");
@@ -35,6 +39,8 @@ class Game extends React.Component
                     gameBoard[position] = "X";
                     this.moveIndex++;
 
+
+                    // pop off used position for randomised computer move
                     for(let ii = 0; ii < this.positionArr.length; ii += 1)
                     {
                         console.log("position: ", typeof(position), " arr: ", typeof(this.positionArr[ii]));
@@ -47,23 +53,24 @@ class Game extends React.Component
 
                     console.log("positionArr", this.positionArr);
                     this.setState({gboard: gameBoard});
-                    this.setState({next: "O"});
+                    
                 }
                 
             }
             else
             {
-                this.declareWinner(this.state.next);
+                this.breakFlag = true;
+                this.declareWinner("O");
             }
             
             if(this.winCondition() === false)
             {
                 // registering computer move
-                
                 let pos = Math.floor(Math.random() * this.positionArr.length);
                 let num = this.positionArr[pos];
                 gameBoard[num] = "O";
 
+                // pop off occupied position
                 for(let jj = 0; jj < this.positionArr.length; jj += 1)
                 {
                     if(this.positionArr[jj] === num)
@@ -74,18 +81,18 @@ class Game extends React.Component
                 
                 this.moveIndex++;
                 this.setState({board: gameBoard});
-                this.setState({next:"X"});
+                
             }
             else
             {
-                this.declareWinner(this.state.next);
+                if(!this.breakFlag)
+                {
+                    this.declareWinner("X");
+                }
+                
             }
             
         }
-
-        
-
-
     }
 
     declareWinner(winner)
@@ -100,6 +107,7 @@ class Game extends React.Component
         }
     }
 
+    // checks if board is "dirty" otherwise win condition will be satisfied
     detectNull()
     {
         let counter = 0;
@@ -130,6 +138,7 @@ class Game extends React.Component
 
     }
 
+    // row win logic
     rowWinCondition()
     {
         let gameBoard = this.state.gboard;
@@ -142,6 +151,10 @@ class Game extends React.Component
                 gameBoard[factor] !== null)
             {
                 console.log("row win: ", ii);
+                this.winArr.push(factor);
+                this.winArr.push(factor + 1);
+                this.winArr.push(factor + 2);
+                this.setState({winElement: this.winArr});
                 return true;
             }
         }
@@ -149,6 +162,7 @@ class Game extends React.Component
         return false;
     }
 
+    // column win logic
     colWinCondition()
     {
         let gameBoard = this.state.gboard;
@@ -161,6 +175,10 @@ class Game extends React.Component
                     gameBoard[ii] !== null)
             {
                 console.log("Col win", ii);
+                this.winArr.push(ii);
+                this.winArr.push(ii + this.boardDims);
+                this.winArr.push(ii + (this.boardDims * this.boardDims));
+                this.setState({winElement: this.winArr});
                 return true;
             }
 
@@ -169,6 +187,8 @@ class Game extends React.Component
         return false;
     }
 
+
+    // diagonal win logic
     diagWinCondition()
     {
         let gameBoard = this.state.gboard;
@@ -179,6 +199,10 @@ class Game extends React.Component
                 gameBoard[0] !== null)
         {
             console.log("bwd diag win!!!");
+            this.winArr.push(0);
+            this.winArr.push(4);
+            this.winArr.push(8);
+            this.setState({winElement: this.winArr});
             return true;
         }
 
@@ -188,12 +212,17 @@ class Game extends React.Component
                 gameBoard[2] !== null)
         {
             console.log("fwd diag win!!!");
+            this.winArr.push(2);
+            this.winArr.push(4);
+            this.winArr.push(6);
+            this.setState({winElement: this.winArr});
             return true;
         }
         
         return false;
     }
 
+    // win logic
     winCondition()
     {
         if(!this.detectNull())
@@ -207,7 +236,7 @@ class Game extends React.Component
     
     render()
     {
-        return <div key={"gameboard"}><Board squares={this.state.gboard} onRefresh={this.onRefresh} /></div>;
+        return <div key={"gameboard"}><Board winSquare={this.winArr} squares={this.state.gboard} onRefresh={this.onRefresh} /></div>;
     }
 
 

@@ -2,14 +2,19 @@ import React from 'react';
 import Square from './square';
 
 class Board extends React.Component{
-    constructor(props)
-    {
-        super(props)
-        this.state = {
-            squares: Array(9).fill(null),
-        }
-    }
 
+    winSquare(counter)
+    {
+        for(let ii = 0; ii < this.props.winSquare.length; ii += 1)
+        {
+            if(counter === this.props.winSquare[ii])
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     createCol(row)
     {
@@ -18,7 +23,11 @@ class Board extends React.Component{
         for(let ii = 0; ii < 3; ii += 1)
         {
             let count = (row * 3) + ii;
-            col.push(<Square key={count} value={this.props.squares[count]} onClick={() => this.props.onRefresh(count)} />)
+            
+            
+            console.log("winSquare: ", this.winSquare(count));
+
+            col.push(<Square key={count} winState={this.winSquare(count)} value={this.props.squares[count]} onClick={() => this.props.onRefresh(count)} />)
         }
 
         return <div key={"col"+row}>{col}</div>;
