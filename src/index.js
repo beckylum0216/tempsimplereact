@@ -8,7 +8,7 @@ class App extends React.Component
 {
     render()
     {
-        return <div><Game /></div>;
+        return <div key={"bob-bomb"}><Game /></div>;
     }
 }
 

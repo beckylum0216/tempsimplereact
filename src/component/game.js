@@ -6,6 +6,8 @@ class Game extends React.Component
     constructor(props)
     {
         super(props)
+        this.positionArr = [0,1,2,3,4,5,6,7,8];
+        this.moveIndex = 0;
         this.boardDims = 3;
         this.state = {
             gboard: Array(9).fill(null),
@@ -15,10 +17,75 @@ class Game extends React.Component
 
     onRefresh = (position) =>
     {
-        var gameBoard = this.state.gboard;
-        gameBoard[position] = this.state.next;
-        this.setState({gboard: gameBoard});
-        this.setState({next: "O"})
+
+        let gameBoard = this.state.gboard;
+
+        if(this.winCondition() === false && this.moveIndex > (this.boardDims * this.boardDims))
+        {
+
+            alert("The game is a draw");
+        }
+        else
+        {
+            if(this.winCondition() === false)
+            {
+                // registering player move
+                if(gameBoard[position] === null)
+                {
+                    gameBoard[position] = "X";
+                    this.moveIndex++;
+
+                    for(let ii = 0; ii < this.positionArr.length; ii += 1)
+                    {
+                        console.log("position: ", typeof(position), " arr: ", typeof(this.positionArr[ii]));
+                        if(this.positionArr[ii] === position)
+                        {
+                            this.positionArr.splice(ii, 1);
+                            break;
+                        }
+                    }
+
+                    console.log("positionArr", this.positionArr);
+                    this.setState({gboard: gameBoard});
+                    this.setState({next: "O"});
+                }
+                
+            }
+            else
+            {
+                this.declareWinner(this.state.next);
+            }
+            
+            if(this.winCondition() === false)
+            {
+                // registering computer move
+                
+                let pos = Math.floor(Math.random() * this.positionArr.length);
+                let num = this.positionArr[pos];
+                gameBoard[num] = "O";
+
+                for(let jj = 0; jj < this.positionArr.length; jj += 1)
+                {
+                    if(this.positionArr[jj] === num)
+                    {
+                        this.positionArr.splice(jj, 1);
+                    }
+                }
+                
+                this.moveIndex++;
+                this.setState({board: gameBoard});
+                this.setState({next:"X"});
+            }
+            else
+            {
+                this.declareWinner(this.state.next);
+            }
+            
+        }
+
+        
+
+
     }
 
     declareWinner(winner)
@@ -36,12 +103,12 @@ class Game extends React.Component
     detectNull()
     {
         let counter = 0;
-
+        let gameBoard = this.state.gboard;
         for(let ii = 0; ii < this.boardDims; ii += 1)
         {
             for(let jj = 0; jj < this.boardDims; jj += 1)
             {
-                if(this.state.gboard[ii+jj]===null)
+                if(gameBoard[ii+jj] === null)
                 {
                     counter++;
                 }
@@ -70,8 +137,11 @@ class Game extends React.Component
         for(let ii = 0; ii < this.boardDims; ii += 1)
         {
             let factor = ii * this.boardDims;
-            if(gameBoard[factor] === gameBoard[factor + 1] && gameBoard[factor + 1] === gameBoard[factor + 2])
+            if(gameBoard[factor] === gameBoard[factor + 1] && 
+                gameBoard[factor + 1] === gameBoard[factor + 2] && 
+                gameBoard[factor] !== null)
             {
+                console.log("row win: ", ii);
                 return true;
             }
         }
@@ -86,8 +156,11 @@ class Game extends React.Component
         for(let ii = 0; ii < this.boardDims; ii += 1)
         {
             
-            if(gameBoard[ii] === gameBoard[ii + this.boardDims] && gameBoard[ii + this.boardDims] === gameBoard[ii + (this.boardDims + this.boardDims)])
+            if(gameBoard[ii] === gameBoard[ii + this.boardDims] && 
+                gameBoard[ii + this.boardDims] === gameBoard[ii + (this.boardDims + this.boardDims)] &&
+                    gameBoard[ii] !== null)
             {
+                console.log("Col win", ii);
                 return true;
             }
 
@@ -98,16 +171,23 @@ class Game extends React.Component
 
     diagWinCondition()
     {
-        let gameBoard= this.state.gboard;
+        let gameBoard = this.state.gboard;
 
-        
-        if(gameBoard[0] === gameBoard[4] && gameBoard[4] === gameBoard[8])
+        // backward diagonal
+        if(gameBoard[0] === gameBoard[4] && 
+            gameBoard[4] === gameBoard[8] &&
+                gameBoard[0] !== null)
         {
+            console.log("bwd diag win!!!");
             return true;
         }
 
-        if(gameBoard[2] === gameBoard[4] && gameBoard[4] === gameBoard[6])
+        // forward diagonal
+        if(gameBoard[2] === gameBoard[4] && 
+            gameBoard[4] === gameBoard[6] && 
+                gameBoard[2] !== null)
         {
+            console.log("fwd diag win!!!");
             return true;
         }
         
@@ -116,45 +196,18 @@ class Game extends React.Component
 
     winCondition()
     {
-        return !this.detectNull() && this.rowWinCondition() && this.colWinCondition() && this.diagWinCondition();
-    }
-
-    logic()
-    {
-        let gameBoard = this.state.gboard;
-        let moves = Array(this.boardDims * this.boardDims).fill(null);
-        let moveIndex = 0;
-        let x = 0;
-        let y = 0;
-        
-        
-        if(this.winCondition() === false && moveIndex < (this.boardDims * this.boardDims))
+        if(!this.detectNull())
         {
-            if(this.state.next === "O")
-            {
-                x = moves[moveIndex] / this.boardDims;
-                y = moves[moveIndex] % this.boardDims;
-                gameBoard[x+y] = "O";
-                moveIndex++;
-                this.setState({board: gameBoard});
-                this.setState({next:"X"});
-                return <Board squares={this.state.gboard} onRefresh={this.onRefresh} />
-            }
-            else
-            {
-                moveIndex++
-                return <Board squares={this.state.gboard} onRefresh={this.onRefresh} />
-            }
-
+            return this.rowWinCondition() || this.colWinCondition() || this.diagWinCondition();
         }
 
-
-
+        return false;
     }
 
+    
     render()
     {
-        return <div>{this.logic()}</div>;
+        return <div key={"gameboard"}><Board squares={this.state.gboard} onRefresh={this.onRefresh} /></div>;
     }
 
 

@@ -18,10 +18,10 @@ class Board extends React.Component{
         for(let ii = 0; ii < 3; ii += 1)
         {
             let count = (row * 3) + ii;
-            col.push(<Square value={this.props.squares[count]} onClick={() => this.props.onRefresh(count)} />)
+            col.push(<Square key={count} value={this.props.squares[count]} onClick={() => this.props.onRefresh(count)} />)
         }
 
-        return <div>{col}</div>;
+        return <div key={"col"+row}>{col}</div>;
     }
 
     createBoard(){
@@ -32,12 +32,12 @@ class Board extends React.Component{
             row.push(this.createCol(ii));
         }
 
-        return <div>{row}</div>;
+        return <div key={"rowsie"}>{row}</div>;
     }
 
     render()
     {
-        return <div>{this.createBoard()}</div>;
+        return <div key={"boardsie"}>{this.createBoard()}</div>;
     }
 }
 
