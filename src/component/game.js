@@ -6,6 +6,8 @@ class Game extends React.Component
     constructor(props)
     {
         super(props)
+        this.step = 0;
+        this.history = new Map();
         this.winArr = [];
         this.positionArr = [0,1,2,3,4,5,6,7,8];
         this.moveIndex = 0;
@@ -15,13 +17,14 @@ class Game extends React.Component
             gboard: Array(9).fill(null),
             winElement: [],
         }
+        this.past = this.state.gboard;
+        this.history.set(0, this.past);
     }
 
 
     // contains game logic
     onRefresh = (position) =>
     {
-
         let gameBoard = this.state.gboard;
 
         if(this.winCondition() === false && this.moveIndex > (this.boardDims * this.boardDims)-1)
@@ -43,7 +46,7 @@ class Game extends React.Component
                     // pop off used position for randomised computer move
                     for(let ii = 0; ii < this.positionArr.length; ii += 1)
                     {
-                        console.log("position: ", typeof(position), " arr: ", typeof(this.positionArr[ii]));
+                        
                         if(this.positionArr[ii] === position)
                         {
                             this.positionArr.splice(ii, 1);
@@ -51,8 +54,11 @@ class Game extends React.Component
                         }
                     }
 
-                    console.log("positionArr", this.positionArr);
+                    
                     this.setState({gboard: gameBoard});
+                    this.step++;
+                    this.past = gameBoard;
+                    this.history.set(this.step, this.past);
                     
                 }
                 
@@ -81,6 +87,9 @@ class Game extends React.Component
                 
                 this.moveIndex++;
                 this.setState({board: gameBoard});
+                this.step++;
+                this.past = gameBoard;
+                this.history.set(this.step, this.past);
                 
             }
             else
@@ -125,14 +134,11 @@ class Game extends React.Component
 
         if(counter === (this.boardDims * this.boardDims))
         {
-            console.log("empty board!!!");
             
             return true;
         }
         else
         {
-            console.log("dirty board!!!");
-
             return false;
         }
 
@@ -174,7 +180,7 @@ class Game extends React.Component
                 gameBoard[ii + this.boardDims] === gameBoard[ii + (this.boardDims + this.boardDims)] &&
                     gameBoard[ii] !== null)
             {
-                console.log("Col win", ii);
+                
                 this.winArr.push(ii);
                 this.winArr.push(ii + this.boardDims);
                 this.winArr.push(ii + (this.boardDims * this.boardDims));
@@ -198,7 +204,7 @@ class Game extends React.Component
             gameBoard[4] === gameBoard[8] &&
                 gameBoard[0] !== null)
         {
-            console.log("bwd diag win!!!");
+            
             this.winArr.push(0);
             this.winArr.push(4);
             this.winArr.push(8);
@@ -211,7 +217,7 @@ class Game extends React.Component
             gameBoard[4] === gameBoard[6] && 
                 gameBoard[2] !== null)
         {
-            console.log("fwd diag win!!!");
+            
             this.winArr.push(2);
             this.winArr.push(4);
             this.winArr.push(6);
@@ -233,10 +239,40 @@ class Game extends React.Component
         return false;
     }
 
-    
+    // history functionality still experimental
+    jump(steppy)
+    {
+        console.log(this.history.get(steppy));
+        this.setState({gboard: this.history.get(steppy)});
+    }
+
+    renderHistory()
+    {
+        let list = [];
+        let desc = "Go to Start";
+        for(let ii = 0; ii < this.history.size; ii += 1)
+        {
+            if(ii)
+            {
+                desc = "Go to move: " + ii;
+            }
+            else
+            {
+                desc = "Go to start";
+            }
+
+            list.push(<li key={ii}><button onClick={() => this.jump(ii)}>{desc}</button></li>);
+        }
+
+        return <div key={"listy"}>{list}</div>;
+    }
+
     render()
     {
-        return <div key={"gameboard"}><Board winSquare={this.winArr} squares={this.state.gboard} onRefresh={this.onRefresh} /></div>;
+        return (<div className="game" key={"game"}>
+                    <div key={"gameboard"}><Board winSquare={this.winArr} squares={this.state.gboard} onRefresh={this.onRefresh} /></div>
+                    {/* trying to add history <div key={"history"}><ol>{this.renderHistory()}</ol></div>*/}
+                </div>);
     }
 
 
